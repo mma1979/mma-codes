@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <FileVersion>9.0.0</FileVersion>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AssemblyName>Mma.Configuration</AssemblyName>
+    <AssemblyVersion>9.0.2</AssemblyVersion>
+    <Version>9.0.2</Version>
+    <PackageVersion>9.0.2</PackageVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageIcon>mma3.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/mma1979/mma-configuration</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+  </ItemGroup>
+  
+ <ItemGroup>
+    <None Include="docs\**\*" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
