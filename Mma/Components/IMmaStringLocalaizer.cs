@@ -8,12 +8,12 @@ using System.Globalization;
 
 namespace Mma.Components;
 
-public class IOPTStringLocalaizer : IStringLocalizer
+public class IMmaStringLocalaizer : IStringLocalizer
 {
     private readonly Translator _translator;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private string language = "ar";
-    public IOPTStringLocalaizer(Translator translator, IHttpContextAccessor httpContextAccessor)
+    public IMmaStringLocalaizer(Translator translator, IHttpContextAccessor httpContextAccessor)
     {
         _translator = translator;
         _httpContextAccessor = httpContextAccessor;

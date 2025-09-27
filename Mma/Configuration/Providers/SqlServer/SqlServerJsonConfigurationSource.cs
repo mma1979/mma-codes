@@ -15,6 +15,10 @@ public class SqlServerJsonConfigurationSource : IConfigurationSource
     public string? Environment { get; set; }
     public TimeSpan ReloadInterval { get; set; } = TimeSpan.Zero;
     public bool ReloadOnChange { get; set; } = false;
+    public bool AutoCreateTable { get; set; } = false;
+    public bool Optional { get; set; } = false;
+    public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(30);
+    public int MaxRetryAttempts { get; set; } = 5;
 
     public IConfigurationProvider Build(IConfigurationBuilder builder)
     {

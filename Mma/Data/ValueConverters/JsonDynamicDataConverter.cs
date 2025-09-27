@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Mma.Data.ValueConverters;
 
-public class JsonDynamicDataConverter : ValueConverter<object, string>
+public class JsonDynamicDataConverter : ValueConverter<object?, string>
 {
     public JsonDynamicDataConverter() : base(
         obj => obj == null ? "{}" : JsonConvert.SerializeObject(obj),

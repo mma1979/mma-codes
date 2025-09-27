@@ -16,7 +16,7 @@ public static class MLHelper
         var samples = new List<TextData>()
             {
 
-                 new TextData{ Text = text },
+                 new() { Text = text },
             };
 
         // Convert training data to IDataView.
@@ -61,7 +61,7 @@ public static class MLHelper
             float>>(transformedDataView.Schema["NgramFeatures"]);
         var slots = slotNames.GetValues();
 
-        HashSet<string> tokens = new();
+        HashSet<string> tokens = [];
         foreach (var featureRow in NgramFeaturesColumn)
         {
             foreach (var item in featureRow.Items())
@@ -77,10 +77,10 @@ public static class MLHelper
 
 public class TextData
 {
-    public string Text { get; set; }
+    public string Text { get; set; } = "";
 }
 
 public class TransformedTextData : TextData
 {
-    public float[] NgramFeatures { get; set; }
+    public  float[] NgramFeatures { get; set; } = [];
 }

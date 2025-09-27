@@ -15,9 +15,58 @@ public class RestHelper
     public  string Token { get; set; } = "";
 
 
-    public Task<T> APICaller<T>(string resource, Method method, object? body, List<Tuple<string, object>>? urlSegment = null, List<Tuple<string, object>>? parameters = null, List<Tuple<string, string>>? headers = null, List<string>? files = null)
+   
+
+   
+    public async Task<T> Get<T>(string resource, object? body = null,
+        List<Tuple<string, object>>? urlSegment = null,
+        List<Tuple<string, object>>? parameters = null,
+        List<Tuple<string, string>>? headers = null,
+        List<string>? files = null)
     {
-        ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
+        var res = await APICaller<T>(resource, Method.Get, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
+        return res;
+    }
+
+
+
+    public async Task<T> Post<T>(string resource, object? body,
+        List<Tuple<string, object>>? urlSegment = null,
+        List<Tuple<string, object>>? parameters = null,
+        List<Tuple<string, string>>? headers = null,
+        List<string>? files = null)
+    {
+        var res = await APICaller<T>(resource, Method.Post, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
+        return res;
+    }
+
+    public async Task<T> Put<T>(string resource, object? body,
+        List<Tuple<string, object>>? urlSegment = null,
+        List<Tuple<string, object>>? parameters = null,
+        List<Tuple<string, string>>? headers = null,
+        List<string>? files = null)
+    {
+        var res = await APICaller<T>(resource, Method.Put, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
+        return res;
+    }
+
+    public async Task<T> Delete<T>(string resource, object? body = null,
+       List<Tuple<string, object>>? urlSegment = null,
+       List<Tuple<string, object>>? parameters = null,
+       List<Tuple<string, string>>? headers = null,
+       List<string>? files = null)
+    {
+        var res = await APICaller<T>(resource, Method.Delete, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
+        return res;
+    }
+
+    private Task<T> APICaller<T>(string resource, Method method, object? body,
+        List<Tuple<string, object>>? urlSegment = null,
+        List<Tuple<string, object>>? parameters = null,
+        List<Tuple<string, string>>? headers = null,
+        List<string>? files = null)
+    {
+        // ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
 
         var client = new RestClient(BaseUrl);
 
@@ -36,7 +85,7 @@ public class RestHelper
 
         if (urlSegment != null && urlSegment.Any())
         {
-            urlSegment.ForEach(s => request.AddUrlSegment(s.Item1, s.Item2.ToString()));
+            urlSegment.ForEach(s => request.AddUrlSegment(s.Item1, s.Item2.ToString()!));
         }
 
         if (headers != null && headers.Any())
@@ -64,36 +113,9 @@ public class RestHelper
             throw exception;
         }
 
-        var result = JsonConvert.DeserializeObject<T>(response.Content);
-        return Task.FromResult(result);
+        var result = JsonConvert.DeserializeObject<T>(response.Content!);
+        return Task.FromResult(result!);
     }
-
-    public async Task<T> Delete<T>(string resource, object? body = null, List<Tuple<string, object>>? urlSegment = null, List<Tuple<string, object>>? parameters = null, List<Tuple<string, string>>? headers = null, List<string>? files = null)
-    {
-        var res = await APICaller<T>(resource, Method.Delete, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
-        return res;
-    }
-
-    public async Task<T> Get<T>(string resource, object? body = null,    List<Tuple<string, object>>? urlSegment = null, List<Tuple<string, object>>? parameters = null, List<Tuple<string, string>>? headers = null, List<string>? files = null)
-    {
-        var res = await APICaller<T>(resource, Method.Get, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
-        return res;
-    }
-
-
-
-    public async Task<T> Post<T>(string resource, object? body, List<Tuple<string, object>>? urlSegment = null, List<Tuple<string, object>>? parameters = null, List<Tuple<string, string>>? headers = null, List<string>? files = null)
-    {
-        var res = await APICaller<T>(resource, Method.Post, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
-        return res;
-    }
-
-    public async Task<T> Put<T>(string resource, object? body, List<Tuple<string, object>>? urlSegment = null, List<Tuple<string, object>>? parameters = null, List<Tuple<string, string>>? headers = null, List<string>? files = null)
-    {
-        var res = await APICaller<T>(resource, Method.Put, body, urlSegment, parameters, headers, files).ConfigureAwait(false);
-        return res;
-    }
-
 
 
 }

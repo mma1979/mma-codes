@@ -24,11 +24,11 @@ public static class StringExtensions
         else
             return new Regex("\\s+").Replace(value.Trim(), newString);
     }
-    public static string ReplaceWithNullIfEmpty(this string value)
+    public static string? ReplaceWithNullIfEmpty(this string value)
     {
         return value.Trim().ReplaceIfNullOrEmpty(null);
     }
-    public static string ReplaceIfNullOrEmpty(this string value, string newValue)
+    public static string? ReplaceIfNullOrEmpty(this string value, string? newValue)
     {
         if (string.IsNullOrEmpty(value))
             return newValue;
@@ -82,7 +82,7 @@ public static class StringExtensions
         }
     }
 
-    public static string GetQueryString(this Dictionary<string, string> queryStrings, string key)
+    public static string? GetQueryString(this Dictionary<string, string> queryStrings, string key)
     {
         // IEnumerable<KeyValuePair<string,string>> - right!
 

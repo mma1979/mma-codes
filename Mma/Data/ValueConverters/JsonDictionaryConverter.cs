@@ -20,6 +20,6 @@ public class JsonDictionaryConverter : ValueConverter<Dictionary<string, object>
             return [];
 
         var jObject = JObject.Parse(json);
-        return jObject.ToObject<Dictionary<string, object>>();
+        return jObject.ToObject<Dictionary<string, object>>()!;
     }
 }

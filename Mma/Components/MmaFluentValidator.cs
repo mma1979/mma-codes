@@ -7,38 +7,38 @@ using Mma.Helpers;
 
 namespace Mma.Components;
 
-public class OPTFluentValidator<TValidator> : ComponentBase where TValidator : IValidator, new()
+public class MmaFluentValidator<TValidator> : ComponentBase where TValidator : IValidator, new()
 {
     private readonly static char[] separators = ['.', '['];
-    private TValidator validator;
+    private TValidator? validator;
 
-    [CascadingParameter] private EditContext EditContext { get; set; }
-    [Inject] private Translator Translator { get; set; }
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+    [Inject] private Translator? Translator { get; set; }
 
     protected override void OnInitialized()
     {
         validator = new TValidator();
-        var messages = new ValidationMessageStore(EditContext);
+        var messages = new ValidationMessageStore(EditContext!);
 
         // Revalidate when any field changes, or if the entire form requests validation
         // (e.g., on submit)
 
-        EditContext.OnFieldChanged += (sender, eventArgs)
-            => ValidateModel((EditContext)sender, messages);
+        EditContext!.OnFieldChanged += (sender, eventArgs)
+            => ValidateModel((EditContext?)sender, messages);
 
         EditContext.OnValidationRequested += (sender, eventArgs)
-            => ValidateModel((EditContext)sender, messages);
+            => ValidateModel((EditContext?)sender, messages);
     }
 
-    private void ValidateModel(EditContext editContext, ValidationMessageStore messages)
+    private void ValidateModel(EditContext? editContext, ValidationMessageStore messages)
     {
-        var context = new ValidationContext<object>(editContext.Model);
-        var validationResult = validator.Validate(context);
+        var context = new ValidationContext<object>(editContext!.Model);
+        var validationResult = validator!.Validate(context);
         messages.Clear();
         foreach (var error in validationResult.Errors)
         {
             var fieldIdentifier = ToFieldIdentifier(editContext, error.PropertyName);
-            messages.Add(fieldIdentifier, Translator.Translate(error.ErrorMessage));
+            messages.Add(fieldIdentifier, Translator!.Translate(error.ErrorMessage));
         }
         editContext.NotifyValidationStateChanged();
     }
@@ -63,16 +63,16 @@ public class OPTFluentValidator<TValidator> : ComponentBase where TValidator : I
             var nextToken = propertyPath.Substring(0, nextTokenEnd);
             propertyPath = propertyPath.Substring(nextTokenEnd + 1);
 
-            object newObj;
+            object? newObj;
             if (nextToken.EndsWith("]"))
             {
                 // It's an indexer
                 // This code assumes C# conventions (one indexer named Item with one param)
                 nextToken = nextToken.Substring(0, nextToken.Length - 1);
                 var prop = obj.GetType().GetProperty("Item");
-                var indexerType = prop.GetIndexParameters()[0].ParameterType;
-                var indexerValue = Convert.ChangeType(nextToken, indexerType);
-                newObj = prop.GetValue(obj, [indexerValue]);
+                var indexerType = prop?.GetIndexParameters()[0].ParameterType;
+                var indexerValue = Convert.ChangeType(nextToken, indexerType!);
+                newObj = prop?.GetValue(obj, [indexerValue]);
             }
             else
             {

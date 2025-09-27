@@ -23,7 +23,7 @@ public static class NumricExtensions
         IDictionary<string, string> dict = new Dictionary<string, string>();
         foreach (var k in col.AllKeys)
         {
-            dict.Add(k, col[k]);
+            dict.Add(k!, col[k]!);
         }
         return dict;
     }

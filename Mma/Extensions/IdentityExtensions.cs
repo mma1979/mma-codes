@@ -6,7 +6,7 @@ public static class IdentityExtensions
 {
     public static string GetValue(this ClaimsPrincipal principal, string type)
     {
-        var value = principal.FindFirst(type).Value;
+        var value = principal.FindFirst(type)!.Value;
         if (value.IsNotNullOrEmpty())
             return value;
         return "";

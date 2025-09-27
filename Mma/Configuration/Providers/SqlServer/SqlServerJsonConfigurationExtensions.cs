@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 
+using Mma.Configuration.Providers.SqlServer;
+
 namespace Mma.Configuration.Providers.SqlServer;
 
 // <summary>
@@ -19,7 +21,11 @@ public static class SqlServerJsonConfigurationExtensions
         string? environmentColumn = null,
         string? environment = null,
         bool reloadOnChange = false,
-        TimeSpan reloadInterval = default)
+        TimeSpan reloadInterval = default,
+        bool autoCreateTable = false,
+        bool optional = false,
+        TimeSpan retryDelay = default,
+        int maxRetryAttempts = 5)
     {
         return builder.Add(new SqlServerJsonConfigurationSource
         {
@@ -30,11 +36,15 @@ public static class SqlServerJsonConfigurationExtensions
             EnvironmentColumn = environmentColumn,
             Environment = environment,
             ReloadOnChange = reloadOnChange,
-            ReloadInterval = reloadInterval == default ? TimeSpan.FromMinutes(5) : reloadInterval
+            ReloadInterval = reloadInterval == default ? TimeSpan.FromMinutes(5) : reloadInterval,
+            AutoCreateTable = autoCreateTable,
+            Optional = optional,
+            RetryDelay = retryDelay == default ? TimeSpan.FromSeconds(30) : retryDelay,
+            MaxRetryAttempts = maxRetryAttempts
         });
     }
 
-    // <summary>
+    /// <summary>
     /// Adds SQL Server JSON configuration source with configuration action
     /// </summary>
     public static IConfigurationBuilder AddSqlServerJson(

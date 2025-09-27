@@ -44,7 +44,7 @@ public static class IQuerableExtensions
 
     public static IQueryable<TSource> DistinctBy<TSource, TKey>(this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector)
     {
-        return source.GroupBy(keySelector).Select(x => x.FirstOrDefault());
+        return source.GroupBy(keySelector).Select(x => x.FirstOrDefault()!);
     }
 
     public static IIncludable<TEntity, TProperty> Include<TEntity, TProperty>(

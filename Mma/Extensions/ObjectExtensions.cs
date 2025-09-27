@@ -14,13 +14,13 @@ public static class ObjectExtensions
             return null;
         return value.ToInt();
     }
-    public static string ToNullableString(this object value)
+    public static string? ToNullableString(this object value)
     {
         if (IsNull(value))
             return null;
         return Convert.ToString(value);
     }
-    public static string ToStringIfNull(this object value)
+    public static string? ToStringIfNull(this object value)
     {
         if (IsNull(value))
             return "";
@@ -38,7 +38,7 @@ public static class ObjectExtensions
     }
     public static bool ToBooleanIfNull(this bool? value)
     {
-        if (IsNull(value))
+        if (value is null)
             return false;
         if (!value.HasValue)
             return false;
@@ -130,7 +130,7 @@ public static class ObjectExtensions
     {
         var properties = from p in obj.GetType().GetProperties()
                          where p.GetValue(obj, null) != null
-                         select p.Name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null).ToString());
+                         select p.Name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null)?.ToString());
         return string.Join("&", properties.ToArray());
     }
 

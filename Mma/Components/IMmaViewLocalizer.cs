@@ -10,11 +10,11 @@ using System.Globalization;
 
 namespace Mma.Components;
 
-public class IOPTViewLocalizer : IViewLocalizer
+public class IMmaViewLocalizer : IViewLocalizer
 {
     private readonly Translator _translator;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public IOPTViewLocalizer(Translator translator, IHttpContextAccessor httpContextAccessor)
+    public IMmaViewLocalizer(Translator translator, IHttpContextAccessor httpContextAccessor)
     {
         _translator = translator;
         _httpContextAccessor = httpContextAccessor;
