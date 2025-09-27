@@ -1,130 +1,41 @@
-﻿# SQL Server JSON Configuration Provider
+﻿
+[![Breakall](https://img.shields.io/badge/BreakAll-true-red?style=flat-square)](https://img.shields.io/badge/BreakAll-true-red?style=flat-square) 
+![build and test](https://img.shields.io/github/actions/workflow/status/abpframework/abp/build-and-test.yml?branch=dev&style=flat-square)
+[![NuGet](https://img.shields.io/badge/nugett-v9.0.3-blue?style=flat-square)](https://www.nuget.org/packages/mma-cli)
 
-A .NET configuration provider that loads application settings from a SQL Server table with JSON columns. This provider integrates seamlessly with the .NET configuration system and can be used alongside other configuration sources like `appsettings.json`, environment variables, and more.
+![MMA cli](https://i.imgur.com/wxeEDiY.png)
 
-## 🚀 Features
+```
+.___  ___. .___  ___.      ___      
+|   \/   | |   \/   |     /   \     
+|  \  /  | |  \  /  |    /  ^  \    
+|  |\/|  | |  |\/|  |   /  /_\  \   
+|  |  |  | |  |  |  |  /  _____  \  
+|__|  |__| |__|  |__| /__/     \__\ 
+                                    
+```
 
-- **JSON Configuration Storage**: Store complex configuration objects as JSON in SQL Server
-- **Environment-Specific Settings**: Support for environment-specific configurations with fallback to defaults
-- **Automatic Reloading**: Optional automatic configuration reloading at specified intervals
-- **JSON Flattening**: Automatically flattens JSON objects into .NET configuration format
-- **Flexible Schema**: Customizable table and column names
-- **Error Handling**: Graceful handling of JSON parsing errors with logging
-- **Thread-Safe**: Safe for use in multi-threaded applications
-- **Performance Optimized**: Efficient querying and caching
+# Mma.Configuration
 
-## 📦 Installation
+A powerful .NET configuration provider that loads application settings from SQL Server tables with JSON columns. This provider integrates seamlessly with the .NET configuration system and supports environment-specific configurations, automatic reloading, and complex JSON object storage.
 
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+dotnet add package Mma.Configuration --version 9.0.3
+```
+
+Or via NuGet Package Manager:
 ```xml
-<PackageReference Include="Mma.Configuration" Version="9.0.1" />
+<PackageReference Include="Mma.Configuration" Version="9.0.3" />
 ```
 
-## 🏗️ Database Setup
-
-### 1. Create the Configuration Table
-
-```sql
-CREATE TABLE AppSettings (
-    Id int IDENTITY(1,1) PRIMARY KEY,
-    [Key] nvarchar(255) NOT NULL,
-    JsonValue nvarchar(max) NOT NULL,
-    Environment nvarchar(50) NULL, -- NULL means applies to all environments
-    CreatedAt datetime2 DEFAULT GETDATE(),
-    UpdatedAt datetime2 DEFAULT GETDATE(),
-    UNIQUE([Key], Environment)
-);
-
--- Create index for better performance
-CREATE INDEX IX_AppSettings_Key_Environment ON AppSettings([Key], Environment);
-```
-
-### 2. Insert Sample Configuration Data
-
-```sql
--- Connection strings for different environments
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('ConnectionStrings', '{
-    "Database": "Server=prod-server;Database=MyApp;Integrated Security=true;TrustServerCertificate=true;",
-    "Redis": "prod-redis:6379",
-    "ServiceBus": "Endpoint=sb://prod-servicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=..."
-}', 'Production');
-
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('ConnectionStrings', '{
-    "Database": "Server=dev-server;Database=MyApp_Dev;Integrated Security=true;TrustServerCertificate=true;",
-    "Redis": "localhost:6379",
-    "ServiceBus": "UseDevelopmentStorage=true"
-}', 'Development');
-
--- Logging configuration (applies to all environments)
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('Logging', '{
-    "LogLevel": {
-        "Default": "Information",
-        "Microsoft": "Warning",
-        "Microsoft.EntityFrameworkCore": "Warning"
-    },
-    "Console": {
-        "IncludeScopes": true
-    }
-}', NULL);
-
--- API settings with different values per environment
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('ApiSettings', '{
-    "BaseUrl": "https://api.example.com",
-    "Timeout": 30,
-    "RetryCount": 3,
-    "Features": {
-        "EnableCaching": true,
-        "EnableRateLimiting": true,
-        "MaxConcurrentRequests": 100
-    }
-}', 'Production');
-
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('ApiSettings', '{
-    "BaseUrl": "https://dev-api.example.com",
-    "Timeout": 60,
-    "RetryCount": 5,
-    "Features": {
-        "EnableCaching": false,
-        "EnableRateLimiting": false,
-        "MaxConcurrentRequests": 10
-    }
-}', 'Development');
-
--- JWT settings
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('JwtSettings', '{
-    "SecretKey": "your-super-secret-key-here-at-least-32-characters",
-    "Issuer": "MyApp",
-    "Audience": "MyApp-Users",
-    "ExpiryMinutes": 60,
-    "RefreshTokenExpiryDays": 7
-}', NULL);
-
--- Email configuration
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('EmailSettings', '{
-    "SmtpServer": "smtp.gmail.com",
-    "Port": 587,
-    "EnableSsl": true,
-    "Username": "your-email@gmail.com",
-    "FromName": "MyApp Notifications",
-    "Templates": {
-        "Welcome": "welcome-template.html",
-        "PasswordReset": "password-reset-template.html"
-    }
-}', NULL);
-```
-
-## 🔧 Basic Usage
-
-### 1. Simple Configuration
+### Basic Usage
 
 ```csharp
-using Configuration.SqlServer;
+using Mma.Configuration.Providers.SqlServer;
 
 var configuration = new ConfigurationBuilder()
     .AddSqlServerJson(
@@ -136,28 +47,34 @@ var dbConnectionString = configuration.GetConnectionString("Database");
 var logLevel = configuration["Logging:LogLevel:Default"];
 ```
 
-### 2. ASP.NET Core Integration
+## 🏗️ Database Setup
 
-```csharp
-var builder = WebApplication.CreateBuilder(args);
+Create your configuration table:
 
-// Add SQL Server configuration early in the pipeline
-builder.Configuration.AddSqlServerJson(
-    connectionString: builder.Configuration.GetConnectionString("ConfigDatabase")!,
-    environment: builder.Environment.EnvironmentName,
-    environmentColumn: "Environment",
-    reloadOnChange: true,
-    reloadInterval: TimeSpan.FromMinutes(5));
-
-// Register services
-builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-
-var app = builder.Build();
-app.Run();
+```sql
+CREATE TABLE AppSettings (
+    Id int IDENTITY(1,1) PRIMARY KEY,
+    [Key] nvarchar(255) NOT NULL,
+    JsonValue nvarchar(max) NOT NULL,
+    Environment nvarchar(50) NULL,
+    CreatedAt datetime2 DEFAULT GETDATE(),
+    UpdatedAt datetime2 DEFAULT GETDATE(),
+    UNIQUE([Key], Environment)
+);
 ```
 
-### 3. Advanced Configuration with Options
+## ✨ Key Features
+
+- **Environment-Specific Configuration**: Support for development, staging, production environments with fallback
+- **JSON Object Storage**: Store complex configuration objects as JSON with automatic flattening
+- **Automatic Reloading**: Optional configuration reloading at specified intervals
+- **High Performance**: Optimized SQL queries with connection pooling support
+- **Thread-Safe**: Safe for use in multi-threaded applications
+- **Comprehensive Logging**: Built-in logging for debugging and monitoring
+- **Flexible Schema**: Customizable table and column names
+- **Error Resilience**: Graceful error handling with retry mechanisms
+
+## 🔧 Advanced Configuration
 
 ```csharp
 var configuration = new ConfigurationBuilder()
@@ -171,6 +88,10 @@ var configuration = new ConfigurationBuilder()
         source.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         source.ReloadOnChange = true;
         source.ReloadInterval = TimeSpan.FromMinutes(10);
+        source.AutoCreateTable = false;
+        source.Optional = false;
+        source.MaxRetryAttempts = 5;
+        source.RetryDelay = TimeSpan.FromSeconds(30);
     })
     .Build();
 ```
@@ -186,246 +107,38 @@ var configuration = new ConfigurationBuilder()
 | `EnvironmentColumn` | `string?` | `null` | Name of the environment column (optional) |
 | `Environment` | `string?` | `null` | Current environment name |
 | `ReloadOnChange` | `bool` | `false` | Enable automatic reloading |
-| `ReloadInterval` | `TimeSpan` | `TimeSpan.FromMinutes(5)` | Reload interval when ReloadOnChange is true |
+| `ReloadInterval` | `TimeSpan` | `TimeSpan.Zero` | Reload interval when ReloadOnChange is true |
+| `AutoCreateTable` | `bool` | `false` | Automatically create table if it doesn't exist |
+| `Optional` | `bool` | `false` | Whether the configuration source is optional |
+| `MaxRetryAttempts` | `int` | `5` | Maximum retry attempts on connection failure |
+| `RetryDelay` | `TimeSpan` | `TimeSpan.FromSeconds(30)` | Delay between retry attempts |
 
-## 🎯 Real-World Examples
-
-### Example 1: E-commerce Application
-
-```csharp
-// Startup.cs or Program.cs
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-        // Add SQL Server configuration
-        var configBuilder = new ConfigurationBuilder()
-            .AddConfiguration(configuration) // Include existing config
-            .AddSqlServerJson(
-                connectionString: configuration.GetConnectionString("ConfigDatabase")!,
-                environment: Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-                environmentColumn: "Environment",
-                reloadOnChange: true);
-        
-        var config = configBuilder.Build();
-        
-        // Configure strongly-typed options
-        services.Configure<PaymentSettings>(config.GetSection("PaymentSettings"));
-        services.Configure<ShippingSettings>(config.GetSection("ShippingSettings"));
-        services.Configure<EmailSettings>(config.GetSection("EmailSettings"));
-        
-        // Use in services
-        services.AddScoped<IPaymentService, PaymentService>();
-        services.AddScoped<IShippingService, ShippingService>();
-    }
-}
-
-// Configuration models
-public class PaymentSettings
-{
-    public string StripeSecretKey { get; set; } = string.Empty;
-    public string StripePublishableKey { get; set; } = string.Empty;
-    public PayPalSettings PayPal { get; set; } = new();
-    public bool EnableCryptocurrency { get; set; }
-}
-
-public class PayPalSettings
-{
-    public string ClientId { get; set; } = string.Empty;
-    public string ClientSecret { get; set; } = string.Empty;
-    public string Environment { get; set; } = "sandbox"; // sandbox or live
-}
-
-// Service usage
-public class PaymentService : IPaymentService
-{
-    private readonly PaymentSettings _paymentSettings;
-
-    public PaymentService(IOptions<PaymentSettings> paymentSettings)
-    {
-        _paymentSettings = paymentSettings.Value;
-    }
-
-    public async Task<PaymentResult> ProcessPaymentAsync(PaymentRequest request)
-    {
-        // Use _paymentSettings.StripeSecretKey, etc.
-        // Configuration automatically reloads if changed in database
-    }
-}
-```
-
-### Example 2: Microservices Configuration
+## 🌍 ASP.NET Core Integration
 
 ```csharp
-// Microservice startup
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-        
-        // Each microservice can have its own configuration key
-        builder.Configuration.AddSqlServerJson(
-            connectionString: builder.Configuration.GetConnectionString("SharedConfig")!,
-            environment: builder.Environment.EnvironmentName,
-            environmentColumn: "Environment");
-        
-        // Service-specific configuration
-        builder.Services.Configure<ServiceSettings>(
-            builder.Configuration.GetSection($"Services:{builder.Environment.ApplicationName}"));
-        
-        // Shared configuration
-        builder.Services.Configure<DatabaseSettings>(
-            builder.Configuration.GetSection("SharedDatabase"));
-        
-        var app = builder.Build();
-        app.Run();
-    }
-}
+var builder = WebApplication.CreateBuilder(args);
 
-// Database entries for microservices
-/*
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('Services', '{
-    "UserService": {
-        "Port": 5001,
-        "HealthCheckInterval": "00:01:00",
-        "Features": {
-            "EnableUserRegistration": true,
-            "RequireEmailConfirmation": true
-        }
-    },
-    "OrderService": {
-        "Port": 5002,
-        "HealthCheckInterval": "00:01:00",
-        "Features": {
-            "EnableOrderTracking": true,
-            "AllowCancellations": true
-        }
-    }
-}', 'Production');
-*/
+// Add SQL Server configuration early in the pipeline
+builder.Configuration.AddSqlServerJson(
+    connectionString: builder.Configuration.GetConnectionString("ConfigDatabase")!,
+    environment: builder.Environment.EnvironmentName,
+    environmentColumn: "Environment",
+    reloadOnChange: true,
+    reloadInterval: TimeSpan.FromMinutes(5));
+
+// Configure strongly-typed options
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("Database"));
+
+var app = builder.Build();
+app.Run();
 ```
 
-### Example 3: Feature Flags and A/B Testing
-
-```csharp
-// Feature flags configuration
-/*
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('FeatureFlags', '{
-    "NewCheckoutFlow": {
-        "Enabled": true,
-        "Percentage": 50,
-        "AllowedUsers": ["admin@example.com", "beta@example.com"]
-    },
-    "RecommendationEngine": {
-        "Enabled": true,
-        "Percentage": 100,
-        "MinimumUserAge": 18
-    },
-    "PremiumFeatures": {
-        "Enabled": false,
-        "Percentage": 0,
-        "RequiredPlan": "Premium"
-    }
-}', 'Production');
-*/
-
-// Feature flag service
-public class FeatureFlagService
-{
-    private readonly IConfiguration _configuration;
-    
-    public FeatureFlagService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-    
-    public bool IsFeatureEnabled(string featureName, string? userId = null)
-    {
-        var section = _configuration.GetSection($"FeatureFlags:{featureName}");
-        
-        if (!section.GetValue<bool>("Enabled"))
-            return false;
-            
-        var percentage = section.GetValue<int>("Percentage");
-        if (percentage < 100 && userId != null)
-        {
-            // Simple hash-based percentage rollout
-            var hash = userId.GetHashCode();
-            var userPercentage = Math.Abs(hash % 100);
-            return userPercentage < percentage;
-        }
-        
-        return percentage > 0;
-    }
-}
-```
-
-### Example 4: Multi-Tenant Configuration
-
-```csharp
-// Multi-tenant configuration provider
-public class TenantConfigurationProvider
-{
-    private readonly IConfiguration _configuration;
-    
-    public TenantConfigurationProvider(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-    
-    public T GetTenantSettings<T>(string tenantId, string section) where T : new()
-    {
-        // Try tenant-specific first, then fall back to default
-        var tenantSection = _configuration.GetSection($"Tenants:{tenantId}:{section}");
-        var defaultSection = _configuration.GetSection($"Tenants:Default:{section}");
-        
-        var settings = new T();
-        defaultSection.Bind(settings);
-        tenantSection.Bind(settings); // Override with tenant-specific values
-        
-        return settings;
-    }
-}
-
-// Database configuration for tenants
-/*
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('Tenants', '{
-    "Default": {
-        "BrandingSettings": {
-            "PrimaryColor": "#007bff",
-            "SecondaryColor": "#6c757d",
-            "LogoUrl": "/images/default-logo.png"
-        },
-        "LimitsSettings": {
-            "MaxUsers": 100,
-            "MaxStorageGB": 10,
-            "MaxApiCallsPerHour": 1000
-        }
-    },
-    "tenant-123": {
-        "BrandingSettings": {
-            "PrimaryColor": "#dc3545",
-            "LogoUrl": "/images/tenant-123-logo.png"
-        },
-        "LimitsSettings": {
-            "MaxUsers": 500,
-            "MaxStorageGB": 100,
-            "MaxApiCallsPerHour": 10000
-        }
-    }
-}', 'Production');
-*/
-```
-
-## 📊 JSON Flattening Examples
+## 📊 JSON Flattening
 
 The provider automatically flattens JSON objects into the standard .NET configuration format:
 
-### Input JSON:
+**Input JSON:**
 ```json
 {
     "Database": {
@@ -436,12 +149,11 @@ The provider automatically flattens JSON objects into the standard .NET configur
             "DelaySeconds": 5
         }
     },
-    "Features": ["Feature1", "Feature2", "Feature3"],
-    "IsEnabled": true
+    "Features": ["Feature1", "Feature2", "Feature3"]
 }
 ```
 
-### Flattened Configuration Keys:
+**Flattened Keys:**
 - `MySection:Database:ConnectionString`
 - `MySection:Database:CommandTimeout`
 - `MySection:Database:Retry:MaxAttempts`
@@ -449,18 +161,17 @@ The provider automatically flattens JSON objects into the standard .NET configur
 - `MySection:Features:0` (Feature1)
 - `MySection:Features:1` (Feature2)
 - `MySection:Features:2` (Feature3)
-- `MySection:IsEnabled`
 
 ## 🔄 Configuration Reloading
 
-The provider supports automatic reloading of configuration when changes are detected:
+Enable automatic configuration reloading:
 
 ```csharp
 var configuration = new ConfigurationBuilder()
     .AddSqlServerJson(
         connectionString: connectionString,
         reloadOnChange: true,
-        reloadInterval: TimeSpan.FromMinutes(5)) // Check for changes every 5 minutes
+        reloadInterval: TimeSpan.FromMinutes(5))
     .Build();
 
 // Register for change notifications
@@ -472,118 +183,70 @@ ChangeToken.OnChange(
     });
 ```
 
-## 🏃‍♂️ Performance Considerations
+## 🏃‍♂️ Performance Tips
 
-### 1. Connection Pooling
-Ensure your connection string includes connection pooling settings:
-
-```csharp
-var connectionString = "Server=localhost;Database=MyApp;Integrated Security=true;Pooling=true;Max Pool Size=100;Min Pool Size=5;";
-```
-
-### 2. Indexing
-Create appropriate indexes on your configuration table:
-
-```sql
--- Composite index for key and environment lookups
-CREATE INDEX IX_AppSettings_Key_Environment ON AppSettings([Key], Environment) 
-INCLUDE (JsonValue);
-
--- Index for environment-specific queries
-CREATE INDEX IX_AppSettings_Environment ON AppSettings(Environment) 
-WHERE Environment IS NOT NULL;
-```
-
-### 3. Caching Strategy
-Consider implementing a caching layer for frequently accessed configurations:
-
-```csharp
-public class CachedSqlServerConfigurationProvider : IConfigurationProvider
-{
-    private readonly IMemoryCache _cache;
-    private readonly SqlServerJsonConfigurationProvider _innerProvider;
-    
-    // Implementation details...
-}
-```
+1. **Use Connection Pooling**: Include pooling settings in your connection string
+2. **Create Indexes**: Add appropriate indexes on your configuration table
+3. **Optimize Reload Interval**: Balance between freshness and performance
+4. **Consider Caching**: Implement additional caching for frequently accessed values
 
 ## 🛡️ Security Best Practices
 
-### 1. Secure Connection Strings
-Store sensitive connection strings securely:
+- Store sensitive connection strings in secure stores (Azure Key Vault, etc.)
+- Use principle of least privilege for database access
+- Consider encrypting sensitive JSON values
+- Validate and sanitize configuration inputs
 
-```csharp
-// Use Azure Key Vault or similar for production
-builder.Configuration.AddAzureKeyVault(
-    vaultUri: "https://your-keyvault.vault.azure.net/",
-    credential: new DefaultAzureCredential());
+## 📦 NuGet Package
 
-// Then reference in configuration
-builder.Configuration.AddSqlServerJson(
-    connectionString: builder.Configuration["KeyVault:ConfigDatabaseConnectionString"]!);
+This project is packaged as a NuGet package and outputs to the `./nupkg` directory when built. The package includes:
+
+- Main library assemblies
+- Documentation files
+- Package icon and metadata
+- License information
+
+**Current Version**: 9.0.3  
+**Target Framework**: .NET 9.0  
+**Package Output**: `./nupkg/Mma.Configuration.9.0.3.nupkg`
+
+## 🔧 Building
+
+```bash
+# Restore dependencies
+dotnet restore
+
+# Build the project
+dotnet build
+
+# Create NuGet package (automatically done on build)
+dotnet pack
 ```
 
-### 2. Encrypt Sensitive JSON Values
-For highly sensitive data, consider encrypting JSON values:
+The NuGet package will be generated in the `nupkg` folder.
 
-```sql
--- Example with encrypted values
-INSERT INTO AppSettings ([Key], JsonValue, Environment) VALUES 
-('SecretSettings', 
- ENCRYPTBYPASSPHRASE('YourPassphrase', '{"ApiKey": "secret-api-key", "PrivateKey": "private-key-data"}'),
- 'Production');
-```
+## 📚 Documentation
 
-### 3. Principle of Least Privilege
-Grant minimal required permissions to the configuration database user:
-
-```sql
--- Create dedicated user for configuration access
-CREATE USER [ConfigReader] WITHOUT LOGIN;
-GRANT SELECT ON AppSettings TO [ConfigReader];
--- Do not grant INSERT, UPDATE, DELETE unless necessary
-```
+For comprehensive documentation, examples, and advanced usage scenarios, see the [detailed documentation](README.md).
 
 ## 🐛 Troubleshooting
 
 ### Common Issues:
 
-1. **Connection String Issues**
-   ```
-   Error: A network-related or instance-specific error occurred
-   ```
-   - Verify server name, database name, and credentials
-   - Ensure SQL Server is running and accessible
-   - Check firewall settings
+1. **Connection String Issues**: Verify server name, database name, and credentials
+2. **JSON Parsing Errors**: Validate JSON syntax and check for encoding issues
+3. **Environment Configuration Not Loading**: Verify environment names match database values
+4. **Configuration Not Reloading**: Ensure `ReloadOnChange` is true and connection is active
 
-2. **JSON Parsing Errors**
-   ```
-   Warning: Failed to parse JSON for key 'MyKey'
-   ```
-   - Validate JSON syntax using online JSON validators
-   - Check for special characters or encoding issues
-   - Ensure proper escaping of quotes
-
-3. **Environment Configuration Not Loading**
-   - Verify `EnvironmentColumn` and `Environment` settings match database values
-   - Check that environment names are case-sensitive matches
-   - Ensure NULL environment records exist for fallback values
-
-4. **Configuration Not Reloading**
-   - Verify `ReloadOnChange` is set to `true`
-   - Check that `ReloadInterval` is appropriate for your needs
-   - Ensure database connection remains active
-
-### Debug Configuration Loading:
+### Debug Configuration:
 
 ```csharp
 // Enable detailed logging
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-// Add debug information
-var config = builder.Configuration;
-foreach (var kvp in config.AsEnumerable())
+// List all configuration values
+foreach (var kvp in configuration.AsEnumerable())
 {
     Console.WriteLine($"{kvp.Key} = {kvp.Value}");
 }
@@ -591,26 +254,22 @@ foreach (var kvp in config.AsEnumerable())
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE.txt file for details.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
 
 ## 📞 Support
 
-If you encounter any issues or have questions, please:
+For support, please:
+1. Check the troubleshooting section
+2. Review the comprehensive documentation in the `docs` folder
+3. Search existing issues on the project repository
+4. Create a new issue with detailed information
 
-1. Check the troubleshooting section above
-2. Search existing GitHub issues
-3. Create a new issue with detailed information about your problem
+---
 
-## 🔮 Roadmap
-
-- [ ] Support for Azure SQL Database with managed identity
-- [ ] Configuration validation and schema enforcement  
-- [ ] Bulk configuration update APIs
-- [ ] Configuration versioning and rollback
-- [ ] Integration with popular caching solutions (Redis, etc.)
-- [ ] Configuration change audit logging
-- [ ] Support for configuration encryption at rest
+**Project Repository**: https://github.com/mma1979/mma-configuration  
+**Package Manager**: Available on NuGet  
+**Framework**: .NET 9.0

@@ -1,20 +1,3 @@
-﻿
-[![Breakall](https://img.shields.io/badge/BreakAll-true-red?style=flat-square)](https://img.shields.io/badge/BreakAll-true-red?style=flat-square) 
-![build and test](https://img.shields.io/github/actions/workflow/status/abpframework/abp/build-and-test.yml?branch=dev&style=flat-square)
-[![NuGet](https://img.shields.io/badge/nugett-v9.0.3-blue?style=flat-square)](https://www.nuget.org/packages/mma-cli)
-
-![MMA cli](https://i.imgur.com/wxeEDiY.png)
-
-```
-.___  ___. .___  ___.      ___      
-|   \/   | |   \/   |     /   \     
-|  \  /  | |  \  /  |    /  ^  \    
-|  |\/|  | |  |\/|  |   /  /_\  \   
-|  |  |  | |  |  |  |  /  _____  \  
-|__|  |__| |__|  |__| /__/     \__\ 
-                                    
-```
-
 # Mma.Configuration
 
 A powerful .NET configuration provider that loads application settings from SQL Server tables with JSON columns. This provider integrates seamlessly with the .NET configuration system and supports environment-specific configurations, automatic reloading, and complex JSON object storage.
@@ -227,7 +210,7 @@ The NuGet package will be generated in the `nupkg` folder.
 
 ## 📚 Documentation
 
-For comprehensive documentation, examples, and advanced usage scenarios, see the [detailed documentation](README.md).
+For comprehensive documentation, examples, and advanced usage scenarios, see the [detailed documentation](docs/README.md).
 
 ## 🐛 Troubleshooting
 
